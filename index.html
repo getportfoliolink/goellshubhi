@@ -1008,15 +1008,7 @@ body:hover .cursor-glow {
   transform: translate(-50%, -50%);
 }
 
-/* Transparent pointer capture layer — sits above content, captures all pointer events */
-.pointer-capture {
-  position: fixed;
-  inset: 0;
-  z-index: 9997;
-  pointer-events: auto;
-  background: transparent;
-  touch-action: none;
-}
+
 
 /* ===== PROFILE IMAGE ===== */
 .hero-profile {
@@ -1047,7 +1039,6 @@ body:hover .cursor-glow {
   <div class="gradient-orb gradient-orb-2" id="orb2"></div>
   <div class="gradient-orb gradient-orb-3" id="orb3"></div>
 </div>
-<div class="pointer-capture" id="pointerCapture"></div>
 <div class="cursor-glow" id="cursorGlow"></div>
 
 <div class="noise"></div>
@@ -1549,12 +1540,10 @@ window.addEventListener('load', () => {
 const orb1 = document.getElementById('orb1');
 const orb2 = document.getElementById('orb2');
 const orb3 = document.getElementById('orb3');
-const pointerCapture = document.getElementById('pointerCapture');
 
 let pointerX = window.innerWidth / 2;
 let pointerY = window.innerHeight / 2;
 let scrollY = window.scrollY;
-let isTouch = false;
 
 function updateGradient() {
   const normX = (pointerX / window.innerWidth - 0.5) * 2;
@@ -1575,40 +1564,30 @@ function handlePointerMove(e) {
   updateGradient();
 }
 
-// === DESKTOP: Mouse on pointer capture layer ===
-pointerCapture.addEventListener('mousemove', handlePointerMove);
+// === MOUSE ===
+window.addEventListener('mousemove', handlePointerMove);
 
-// === POINTER EVENTS (unified mouse + touch + pen) ===
+// === POINTER EVENTS ===
 if (window.PointerEvent) {
-  pointerCapture.addEventListener('pointermove', (e) => {
+  window.addEventListener('pointermove', (e) => {
     pointerX = e.clientX;
     pointerY = e.clientY;
-    isTouch = e.pointerType === 'touch';
-    updateGradient();
-  });
-  pointerCapture.addEventListener('pointerdown', (e) => {
-    pointerX = e.clientX;
-    pointerY = e.clientY;
-    isTouch = e.pointerType === 'touch';
     updateGradient();
   });
 }
 
-// === TOUCH (mobile fallback) ===
-pointerCapture.addEventListener('touchmove', (e) => {
-  e.preventDefault();
+// === TOUCH ===
+window.addEventListener('touchmove', (e) => {
   const touch = e.touches[0];
   pointerX = touch.clientX;
   pointerY = touch.clientY;
-  isTouch = true;
   updateGradient();
-}, { passive: false });
+}, { passive: true });
 
-pointerCapture.addEventListener('touchstart', (e) => {
+window.addEventListener('touchstart', (e) => {
   const touch = e.touches[0];
   pointerX = touch.clientX;
   pointerY = touch.clientY;
-  isTouch = true;
   updateGradient();
 }, { passive: true });
 
@@ -1644,14 +1623,13 @@ function handleCursorPointer(e) {
   glowTargetY = e.clientY;
 }
 
-// Bind to pointer capture layer for full page coverage
-pointerCapture.addEventListener('mousemove', handleCursorPointer);
+window.addEventListener('mousemove', handleCursorPointer);
 
 if (window.PointerEvent) {
-  pointerCapture.addEventListener('pointermove', handleCursorPointer);
+  window.addEventListener('pointermove', handleCursorPointer);
 }
 
-pointerCapture.addEventListener('touchmove', (e) => {
+window.addEventListener('touchmove', (e) => {
   const touch = e.touches[0];
   glowTargetX = touch.clientX;
   glowTargetY = touch.clientY;
@@ -1693,19 +1671,18 @@ function handleHapticPointer(e) {
   lastHapticY = e.clientY;
 }
 
-// Bind to pointer capture layer
-pointerCapture.addEventListener('mousemove', handleHapticPointer);
+window.addEventListener('mousemove', handleHapticPointer);
 
 if (window.PointerEvent) {
-  pointerCapture.addEventListener('pointermove', handleHapticPointer);
+  window.addEventListener('pointermove', handleHapticPointer);
 }
 
-pointerCapture.addEventListener('touchmove', (e) => {
+window.addEventListener('touchmove', (e) => {
   const touch = e.touches[0];
   handleHapticPointer({ clientX: touch.clientX, clientY: touch.clientY });
 }, { passive: true });
 
-pointerCapture.addEventListener('touchstart', (e) => {
+window.addEventListener('touchstart', (e) => {
   const touch = e.touches[0];
   lastHapticX = touch.clientX;
   lastHapticY = touch.clientY;
